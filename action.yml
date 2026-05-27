@@ -24,12 +24,10 @@ runs:
       run: |
         set -euo pipefail
 
-        case "${RUNNER_OS}" in
-          Linux)   os=linux ;;
-          macOS)   os=darwin ;;
-          Windows) os=windows ;;
-          *) echo "unsupported OS: ${RUNNER_OS}" >&2; exit 1 ;;
-        esac
+        if [ "${RUNNER_OS}" != "Linux" ]; then
+          echo "unsupported OS: ${RUNNER_OS} (only Linux is supported)" >&2
+          exit 1
+        fi
 
         case "${RUNNER_ARCH}" in
           X64)   arch=amd64 ;;
@@ -37,10 +35,8 @@ runs:
           *) echo "unsupported arch: ${RUNNER_ARCH}" >&2; exit 1 ;;
         esac
 
-        ext=""; [ "$os" = "windows" ] && ext=".exe"
-
         tag="${ACTION_REF}"
-        name="do-db-trusted-sources_${os}_${arch}${ext}"
+        name="do-db-trusted-sources_linux_${arch}"
         base="https://github.com/${ACTION_REPO}/releases/download/${tag}"
 
         workdir="${RUNNER_TEMP}/do-db-trusted-sources"
