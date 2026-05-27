@@ -40,7 +40,7 @@ signs:
     output: true
 
 sboms:
-  - artifacts: archive
+  - artifacts: binary
 
 release:
   draft: false
