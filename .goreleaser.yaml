@@ -1,0 +1,48 @@
+version: 2
+
+project_name: do-db-trusted-sources
+
+before:
+  hooks:
+    - go test ./...
+    - go vet ./...
+
+builds:
+  - id: do-db-trusted-sources
+    main: ./
+    binary: do-db-trusted-sources
+    env:
+      - CGO_ENABLED=0
+    goos: [linux, darwin, windows]
+    goarch: [amd64, arm64]
+    ldflags:
+      - -s -w -X main.version={{.Version}}
+
+archives:
+  - id: raw
+    formats: [binary]
+    name_template: "{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}"
+
+checksum:
+  name_template: "checksums.txt"
+
+# Sign the checksums file with cosign keyless (GitHub OIDC).
+# Verifying the checksums.txt signature transitively verifies every binary.
+signs:
+  - cmd: cosign
+    certificate: '${artifact}.pem'
+    args:
+      - sign-blob
+      - '--output-certificate=${certificate}'
+      - '--output-signature=${signature}'
+      - '${artifact}'
+      - '--yes'
+    artifacts: checksum
+    output: true
+
+sboms:
+  - artifacts: archive
+
+release:
+  draft: false
+  prerelease: auto
