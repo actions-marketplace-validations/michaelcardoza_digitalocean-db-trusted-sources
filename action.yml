@@ -4,6 +4,9 @@ branding:
   icon: database
   color: blue
 inputs:
+  version:
+    description: 'Release version of the binary to download (e.g. 0.1.0). A leading "v" is optional.'
+    required: true
   action:
     description: "'add' or 'remove'"
     required: true
@@ -20,7 +23,7 @@ runs:
       shell: bash
       env:
         ACTION_REPO: ${{ github.action_repository }}
-        ACTION_REF: ${{ github.action_ref }}
+        VERSION: ${{ inputs.version }}
       run: |
         set -euo pipefail
 
@@ -35,7 +38,9 @@ runs:
           *) echo "unsupported arch: ${RUNNER_ARCH}" >&2; exit 1 ;;
         esac
 
-        tag="${ACTION_REF}"
+        # Consumer names the release explicitly via `version`, so the download
+        # always targets a real release tag. Accept both "0.1.0" and "v0.1.0".
+        tag="v${VERSION#v}"
         name="do-db-trusted-sources_linux_${arch}"
         base="https://github.com/${ACTION_REPO}/releases/download/${tag}"
 
